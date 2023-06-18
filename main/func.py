@@ -17,12 +17,26 @@ model.load_state_dict(saved_state_dict, strict=False)
 
 def preprocess_image(media_path: str):
     img = cv2.imread(f"{settings.BASE_DIR}/{media_path}")
-    blur = cv2.GaussianBlur(img, (5, 5), 0)
-    edges = cv2.Canny(blur, 100, 200)
-    contours, hierarchy = cv2.findContours(
-        edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
-    )
-    max_contour = max(contours, key=cv2.contourArea)
+    print(img)
+    try:
+        blur = cv2.GaussianBlur(img, (5, 5), 0)
+        edges = cv2.Canny(blur, 100, 200)
+        contours, hierarchy = cv2.findContours(
+            edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+        )
+        max_contour = max(contours, key=cv2.contourArea)
+    except:
+        img = np.clip(img * (4 / 3), 0, 255).astype(np.uint8)
+        blur = cv2.GaussianBlur(img, (5, 5), 0)
+        edges = cv2.Canny(blur, 100, 200)
+        try:
+            contours, hierarchy = cv2.findContours(
+                edges, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+            )
+            max_contour = max(contours, key=cv2.contourArea)
+        except:
+            resize = cv2.resize(img, (224, 224))
+            return resize
     x, y, w, h = cv2.boundingRect(max_contour)
     crop_img = img[y : y + h, x : x + w]
     resize = cv2.resize(crop_img, (224, 224))
@@ -38,6 +52,11 @@ class TestDataset(Dataset):
         return len(self.image_paths)
 
     def predict(self):
+        for i in range(10):
+            if len(glob.glob(self.image_paths)) != 0:
+                break
+            else:
+                print(i)
         image_filepath = self.image_paths
         # if self.transform is not False:
         #     image = cv2.imread(image_filepath)

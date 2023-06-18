@@ -3,6 +3,7 @@ from .models import SkripsiModel
 from .serializer import SkripsiSerializer
 from rest_framework.response import Response
 from .func import predict
+from django.http.response import HttpResponse
 
 # Create your views here.
 
@@ -25,3 +26,7 @@ class Skripsi(ModelViewSet):
         else:
             data = {"predict": "not Found"}
         return Response(data, headers=headers)
+
+
+def test(request):
+    return HttpResponse("<h1>Ok</h1>")
